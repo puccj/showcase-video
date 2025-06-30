@@ -1,0 +1,5 @@
+__pycache__
+*.pt
+input_videos
+output_videos
+test.ipynb

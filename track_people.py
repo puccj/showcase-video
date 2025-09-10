@@ -75,7 +75,7 @@ def track_people(input_video_path, output_video_path, model='yolov8x.pt', counte
     text_thickness = int(height/640)
     
     if not show_video:
-        pbar = tqdm(total=total_frames, desc="Processing", unit="frame")        
+        pbar = tqdm(total=total_frames, desc="Processing", unit="frame")
 
     trails = {}  # Dictionary to hold trails for each track ID
     frame_count = 0
@@ -96,6 +96,9 @@ def track_people(input_video_path, output_video_path, model='yolov8x.pt', counte
             index = frame_count % trail
 
         for i,box in enumerate(results.boxes):
+            if box.cls.tolist()[0] != 0:  # Assuming '0' is the class ID for 'person'
+                continue
+            
             track_id = box.id
             if track_id is None:
                 track_id = i
@@ -103,8 +106,6 @@ def track_people(input_video_path, output_video_path, model='yolov8x.pt', counte
                 track_id = int(track_id.tolist()[0])
             result = box.xyxy.tolist()[0]
 
-            if box.cls.tolist()[0] != 0:  # Assuming '0' is the class ID for 'person'
-                continue
             x1, y1, x2, y2 = map(int, result)
             center_x = (x1 + x2) // 2
             center_y = (y1 + y2) // 2

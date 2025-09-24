@@ -41,8 +41,6 @@ def track_people(input_video_path, output_video_path, model='yolov8x.pt', counte
         If `trail` is negative.
     """
 
-
-    
     dirname = os.path.dirname(output_video_path)
     if dirname != '':
         os.makedirs(dirname, exist_ok=True)

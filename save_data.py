@@ -44,7 +44,8 @@ def save_data(input_video_path, output_data_path, model='yolov8x.pt', show_video
     
     out = None
     if save_video:
-        out = cv2.VideoWriter(output_data_path.replace('.txt', '.mp4'), cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
+        base, ext = os.path.splitext(output_data_path)
+        out = cv2.VideoWriter(base + '.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, size)
     
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_size = height/1440
@@ -160,19 +161,21 @@ def track_from_data(input_video_path, input_data_path, output_video_path, show_v
             parts = line.strip().split(',')
             frame_num = int(parts[0])
             track_id = int(parts[1])
-            if track_id == 725:
-                track_id = 529  # Cheat: remap ID for better visibility
+            if track_id == 51 or track_id == 94 or track_id == 98:
+                track_id = 7  # Cheat: remap ID for better visibility
             # elif (track_id == 486 or track_id == 535 or track_id == 587 or track_id == 639 
             #       or track_id == 706 or track_id == 893 or track_id == 1105 or track_id == 1221):
             #     track_id = 366  # Cheat: remap IDs 486 and 487 to 366 for better visibility
             bbox = list(map(int, parts[2:6]))
             center = list(map(int, parts[6:8]))
+            x1, y1, x2, y2 = bbox
+            bottom = ((x1 + x2) // 2, y2)
             if frame_num not in tracking_data:
                 tracking_data[frame_num] = []
-            tracking_data[frame_num].append((track_id, bbox, center))
+            tracking_data[frame_num].append((track_id, bbox, center, bottom))
 
     # Select some specific track ID to highlight (for demonstration)
-    selected_ids = [13, 87, 410]   # Set to None to not highlight any specific ID
+    selected_ids = [7]   # Set to None to not highlight any specific ID
     colors = [(0,0,255), (255,0,255), (0,255,255), (255,0,0)]
     trails = {track_id: [] for track_id in selected_ids}  # Trails for selected IDs
     max_trail_length = 10000  # Maximum length of the trail
@@ -183,11 +186,11 @@ def track_from_data(input_video_path, input_data_path, output_video_path, show_v
             break
         
         if frame_count in tracking_data:
-            for track_id, bbox, center in tracking_data[frame_count]:
+            for track_id, bbox, center, bottom in tracking_data[frame_count]:
                 x1, y1, x2, y2 = bbox
 
                 if track_id in selected_ids:
-                    trails[track_id].append(center)
+                    trails[track_id].append(center) # or bottom
                     if len(trails[track_id]) > max_trail_length:
                         trails[track_id].pop(0)
                     # Draw the trail
